@@ -13,6 +13,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <cstddef>
 
 namespace json_model {
 class Model;
