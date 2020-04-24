@@ -1,7 +1,7 @@
 add_executable(
     unit_tests
-    example_first.cpp
-    example_second.cpp
+    test_error.cpp
+    test_traits.cpp
 )
 
 target_link_libraries(

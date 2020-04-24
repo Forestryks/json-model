@@ -20,6 +20,10 @@ compiler:
   - gcc
   - clang
 
+#env:
+#  - CFLAGS="-DJSON_MODEL_FULL_TRACE"
+#  - CFLAGS=""
+
 script:
   - mkdir build
   - cd build
