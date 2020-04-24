@@ -1,0 +1,3 @@
+ignore:
+  - "include/json_model/external/rapidjson/*"
+  - "test/*"
