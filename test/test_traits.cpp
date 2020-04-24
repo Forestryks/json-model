@@ -17,7 +17,7 @@ TEST(traits, traits) {
     static_assert(json_model::is_primitive_v<unsigned>);
     static_assert(json_model::is_primitive_v<uint64_t>);
     static_assert(json_model::is_primitive_v<std::string>);
-    static_assert(json_model::is_primitive_v<nullptr_t>);
+    static_assert(json_model::is_primitive_v<std::nullptr_t>);
     static_assert(!json_model::is_primitive_v<float>);
     static_assert(!json_model::is_primitive_v<int16_t>);
     static_assert(!json_model::is_primitive_v<uint16_t>);
@@ -50,7 +50,7 @@ TEST(traits, traits) {
     static_assert(!json_model::is_map_v<std::unordered_map<std::string, Model>>);
 
     static_assert(json_model::is_variant_v<std::variant<int>>);
-    static_assert(json_model::is_variant_v<std::variant<int, double, std::string, std::unique_ptr<Model>, std::vector<nullptr_t>>>);
+    static_assert(json_model::is_variant_v<std::variant<int, double, std::string, std::unique_ptr<Model>, std::vector<std::nullptr_t>>>);
     static_assert(!json_model::is_variant_v<std::variant<>>);
     static_assert(!json_model::is_variant_v<std::variant<Model>>);
     static_assert(!json_model::is_variant_v<std::variant<std::variant<int>>>);
@@ -73,7 +73,7 @@ TEST(traits, traits) {
                         std::unique_ptr<Model>,
                         std::vector<int>
                     >>>>>,
-                    nullptr_t,
+                    std::nullptr_t,
                     std::unique_ptr<Model>,
                     std::vector<std::unordered_map<std::string, int>>,
                     unsigned,

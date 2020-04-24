@@ -27,7 +27,7 @@ struct is_primitive : std::disjunction<
     std::is_same<T, unsigned>,
     std::is_same<T, uint64_t>,
     std::is_same<T, std::string>,
-    std::is_same<T, nullptr_t>> {
+    std::is_same<T, std::nullptr_t>> {
 };
 
 template<typename T>
