@@ -23,6 +23,8 @@ namespace json_model {
 
 class Model {
 public:
+    virtual ~Model() = default;
+
     [[nodiscard]] std::string to_json() const noexcept {
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -40,6 +42,7 @@ public:
 #define PROVIDE_DETAILS(class_name, ...)\
 static_assert(true); /* to ensure correct indentation when using code formatter */ \
 public:\
+    ~class_name() = default;\
     explicit class_name(json_model::ConstructorDummy _ = json_model::constructor_dummy) noexcept : __VA_ARGS__ {};\
     void to_json_internal(json_model::json_writer_t& _) const noexcept override {\
         _.StartObject();\
