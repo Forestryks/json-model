@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <functional>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -178,7 +179,11 @@ TEST(to_json, vector) {
 
     expected += R"(,"variants":[239,"hello",179,"there"])";
     auto& variants = model.get_variant_vector();
-    variants = {239, "hello", 179, "there"};
+    variants.emplace_back(239);
+    variants.emplace_back("hello");
+    variants.emplace_back(179);
+    variants.emplace_back("there");
+//    variants = {239, "hello", 179, "there"};
 
     expected += "}";
     ASSERT_EQ(model.to_json(), expected);
