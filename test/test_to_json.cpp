@@ -411,7 +411,7 @@ TEST(to_json, variant) {
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":239})");
     model.set_var(std::string("hello"));
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":"hello"})");
-    model.get_var().emplace<nullptr_t>(nullptr);
+    model.get_var().emplace<std::nullptr_t>(nullptr);
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":null})");
     model.set_var(std::vector<int>{1, 2, 3, 4});
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":[1,2,3,4]})");
