@@ -12,8 +12,15 @@ target_link_libraries(
 
 target_compile_options(
     unit_tests PRIVATE
-    -O0 -g --coverage -fno-inline -fno-inline-small-functions -fno-default-inline
+    -O0 -g --coverage -fno-inline
 )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(
+        unit_tests PRIVATE
+        -fno-inline-small-functions -fno-default-inline
+    )
+endif ()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
     target_link_options(unit_tests PRIVATE --coverage)

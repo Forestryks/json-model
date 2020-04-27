@@ -370,7 +370,7 @@ struct VariantModel : json_model::Model {
         bool,
         int,
         std::string,
-        nullptr_t,
+        std::nullptr_t,
         std::vector<int>,
         std::map<std::string, std::string>
     >);

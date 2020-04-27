@@ -29,7 +29,7 @@ to_json(json_writer_t& writer, const T& value) noexcept {
         writer.Uint64(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
         writer.String(value.c_str(), value.size(), true);
-    } else if constexpr (std::is_same_v<T, nullptr_t>) {
+    } else if constexpr (std::is_same_v<T, std::nullptr_t>) {
         writer.Null();
     }
 }
