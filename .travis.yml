@@ -9,8 +9,6 @@ addons:
     packages:
       - cmake
       - valgrind
-      - clang-9
-      - g++-9
       - lcov
 
 os:
