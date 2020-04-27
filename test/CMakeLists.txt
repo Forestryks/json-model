@@ -3,6 +3,7 @@ add_executable(
     test_error.cpp
     test_traits.cpp
     test_to_json.cpp
+    test_from_json.cpp
 )
 
 target_link_libraries(
