@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(error, exception) {
+TEST(errors, errors) {
     json_model::Exception exception_from_c_string("This is error");
     json_model::Exception exception_from_cpp_string(std::string("This is error"));
     ASSERT_STREQ(exception_from_c_string.what(), exception_from_cpp_string.what());

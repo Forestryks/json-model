@@ -2,6 +2,7 @@ add_executable(
     unit_tests
     test_error.cpp
     test_traits.cpp
+    test_to_json.cpp
 )
 
 target_link_libraries(
@@ -11,7 +12,7 @@ target_link_libraries(
 
 target_compile_options(
     unit_tests PRIVATE
-    -O0 -g --coverage
+    -O0 -g --coverage -fno-inline -fno-inline-small-functions -fno-default-inline
 )
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)

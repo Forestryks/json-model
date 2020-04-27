@@ -16,6 +16,7 @@
 #include <cstddef>
 
 namespace json_model {
+
 class Model;
 
 template<typename T>

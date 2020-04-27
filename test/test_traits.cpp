@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-class Model : json_model::Model {};
+class Model : public json_model::Model {};
 class NotModel {};
 
 TEST(traits, traits) {
