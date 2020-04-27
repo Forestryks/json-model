@@ -366,8 +366,18 @@ TEST(to_json, nested_vector) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct InnerVariantModel : json_model::Model {
+    DECLARE_FIELD(string, std::string);
+
+    PROVIDE_DETAILS(
+        InnerVariantModel,
+        string(_, "string")
+    )
+};
+
 struct VariantModel : json_model::Model {
     DECLARE_FIELD(var, std::variant<
+        std::unique_ptr<InnerVariantModel>,
         bool,
         int,
         std::string,
@@ -382,20 +392,43 @@ struct VariantModel : json_model::Model {
     )
 };
 
+struct PrimitiveVariantModel : json_model::Model {
+    DECLARE_FIELD(var, std::variant<int>);
+
+    PROVIDE_DETAILS(
+        PrimitiveVariantModel,
+        var(_, "var")
+    );
+};
+
 TEST(to_json, variant) {
     VariantModel model;
     ASSERT_EQ(model.get_var().index(), 0u);
-    ASSERT_STREQ(model.to_json().c_str(), R"({"var":false})");
+    ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"string":""}})");
+    model.set_var(true);
+    ASSERT_STREQ(model.to_json().c_str(), R"({"var":true})");
     model.set_var(239);
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":239})");
     model.set_var(std::string("hello"));
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":"hello"})");
-    model.set_var(nullptr);
+    model.get_var().emplace<nullptr_t>(nullptr);
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":null})");
     model.set_var(std::vector<int>{1, 2, 3, 4});
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":[1,2,3,4]})");
-    model.set_var(std::map<std::string, std::string>{{"hello", "there"},{"239","179"}});
+    model.set_var(
+        std::map<std::string, std::string>{
+            {"hello", "there"},
+            {"239",   "179"}
+        }
+    );
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"239":"179","hello":"there"}})");
+    auto ptr = std::make_unique<InnerVariantModel>();
+    ptr->set_string("hello");
+    model.get_var() = std::move(ptr);
+    ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"string":"hello"}})");
+
+    PrimitiveVariantModel primitive_model;
+    ASSERT_STREQ(primitive_model.to_json().c_str(), R"({"var":0})");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
