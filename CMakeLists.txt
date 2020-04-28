@@ -15,7 +15,7 @@ fetch_googletest(
 
 set(
     CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-comment -Wcast-align -Wcast-qual -Wdisabled-optimization -Winit-self -Wunused -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=2 -Werror"
+    "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-comment -Wcast-align -Wcast-qual -Wdisabled-optimization -Winit-self -Wunused -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=2 -Wimplicit-fallthrough=3 -Werror"
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

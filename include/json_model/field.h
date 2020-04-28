@@ -19,7 +19,7 @@ public:
     Field() = delete;
     Field(ConstructorDummy, const char*) noexcept {
         static_assert(!std::is_pointer_v<T>, "Use std::unique_ptr instead of raw pointers");
-        static_assert(is_valid_field_v<T>);
+        static_assert(is_valid_for_field_v<T>);
 
         if constexpr (is_primitive_v<T>) {
             value_ = T();
@@ -48,9 +48,9 @@ public:
         }
     }
 
-//    void operator()([[maybe_unused]] const json_value_t& value, [[maybe_unused]] const char* name) {
-//
-//    }
+    void operator()([[maybe_unused]] const JsonValueWrapper& value_wrapper, [[maybe_unused]] const char* name) {
+
+    }
 
     T value_;
 };

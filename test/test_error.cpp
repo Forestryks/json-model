@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+////////////////////////////////////////////////////////////////////////////////
+
 TEST(error, parse_error) {
     const std::string filler = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
     const size_t SEGMENT_SIZE = 30;
@@ -65,5 +67,99 @@ TEST(error, parse_error) {
             parse_error.what(),
             "Failed to parse json string"
         );
+        ASSERT_EQ(
+            parse_error.get_offset_(),
+            8u
+        );
+        ASSERT_EQ(
+            parse_error.get_reason_(),
+            "Oh, no"
+        );
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+TEST(error, type_string) {
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kNullType), "null");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kFalseType), "bool");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kTrueType), "bool");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kObjectType), "object");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kArrayType), "array");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kStringType), "string");
+    ASSERT_STREQ(json_model::get_type_string(rapidjson::kNumberType), "number");
+    int x = 20;
+    ASSERT_STREQ(json_model::get_type_string(*reinterpret_cast<rapidjson::Type*>(&x)), "wtf");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+TEST(error, type_mismatch) {
+    {
+        json_model::TypeMismatchError string_string("string", "number");
+        json_model::TypeMismatchError string_id("string", rapidjson::kNumberType);
+        json_model::TypeMismatchError id_string(rapidjson::kStringType, "number");
+        json_model::TypeMismatchError id_id(rapidjson::kStringType, rapidjson::kNumberType);
+        ASSERT_EQ(
+            string_string.get_compact(),
+            string_id.get_compact()
+        );
+        ASSERT_EQ(
+            string_string.get_compact(),
+            id_string.get_compact()
+        );
+        ASSERT_EQ(
+            string_string.get_compact(),
+            id_id.get_compact()
+        );
+    }
+
+    json_model::TypeMismatchError error("string", rapidjson::kNumberType);
+    error.add_trace_index(123);
+    error.add_trace_index(239);
+    error.add_trace_key("hello");
+    error.add_trace_index(179);
+    error.add_trace_key("world");
+    ASSERT_STREQ(
+        error.what(),
+        "Type mismatch"
+    );
+    ASSERT_EQ(
+        error.get_compact(),
+        R"(Type mismatch at 'root["world"][179]["hello"][239][123]' (expected: string, actual: number))"
+    );
+    ASSERT_EQ(
+        error.get_prettified(),
+        "Type mismatch:\n"
+        "  expected: root[\"world\"][179][\"hello\"][239][123]\n"
+        "  which is: number\n"
+        "     to be: string"
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+TEST(error, missing_key) {
+    json_model::MissingKeyError error("id");
+    error.add_trace_index(123);
+    error.add_trace_index(239);
+    error.add_trace_key("hello");
+    error.add_trace_index(179);
+    error.add_trace_key("world");
+    ASSERT_STREQ(
+        error.what(),
+        "Missing required key"
+    );
+    ASSERT_EQ(
+        error.get_compact(),
+        R"(Key 'id' missing at 'root["world"][179]["hello"][239][123]')"
+    );
+    ASSERT_EQ(
+        error.get_prettified(),
+        "Missing required key:\n"
+        "     expected: root[\"world\"][179][\"hello\"][239][123]\n"
+        "  to have key: id"
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////

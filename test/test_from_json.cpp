@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+////////////////////////////////////////////////////////////////////////////////
+
 struct SimpleModel : public json_model::Model {
     DECLARE_FIELD(string, std::string);
 
@@ -17,5 +19,10 @@ struct SimpleModel : public json_model::Model {
 
 TEST(from_json, simple) {
     SimpleModel model;
-//    model.from_json(R"(a{"asd":})");
+    ASSERT_THROW(
+        model.from_json(R"({"bad_json":}})"),
+        json_model::ParseError
+    );
 }
+
+////////////////////////////////////////////////////////////////////////////////

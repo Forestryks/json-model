@@ -6,5 +6,5 @@
 .idea/**/contentModel.xml
 cmake-build-*/
 *.iws
-build/
+build*/
 

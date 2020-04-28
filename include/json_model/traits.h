@@ -117,10 +117,10 @@ template<typename T>
 inline constexpr bool is_optional_v = is_optional<T>::value;
 
 template<typename T>
-struct is_valid_field : std::disjunction<is_optional<T>, is_containable<T>> {};
+struct is_valid_for_field : std::disjunction<is_optional<T>, is_containable<T>> {};
 
 template<typename T>
-inline constexpr bool is_valid_field_v = is_valid_field<T>::value;
+inline constexpr bool is_valid_for_field_v = is_valid_for_field<T>::value;
 
 } // namespace json_model
 

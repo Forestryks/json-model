@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+////////////////////////////////////////////////////////////////////////////////
+
 class Model : public json_model::Model {};
 class NotModel {};
 
@@ -63,7 +65,7 @@ TEST(traits, traits) {
     static_assert(!json_model::is_optional_v<std::optional<std::optional<int>>>);
 
     static_assert(
-        json_model::is_valid_field_v<
+        json_model::is_valid_for_field_v<
             std::optional<
                 std::variant<
                     int,
@@ -86,3 +88,5 @@ TEST(traits, traits) {
         >
     );
 }
+
+////////////////////////////////////////////////////////////////////////////////
