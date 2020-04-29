@@ -6,7 +6,11 @@
 
 #include <gtest/gtest.h>
 
+namespace json_model::test_error {
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace parse_error {
 
 TEST(error, parse_error) {
     const std::string filler = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -78,7 +82,11 @@ TEST(error, parse_error) {
     }
 }
 
+} // namespace parse_error
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace type_string {
 
 TEST(error, type_string) {
     ASSERT_STREQ(json_model::get_type_string(rapidjson::kNullType), "null");
@@ -92,7 +100,11 @@ TEST(error, type_string) {
     ASSERT_STREQ(json_model::get_type_string(*reinterpret_cast<rapidjson::Type*>(&x)), "wtf");
 }
 
+} // namespace type_string
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace type_mismatch {
 
 TEST(error, type_mismatch) {
     {
@@ -137,7 +149,11 @@ TEST(error, type_mismatch) {
     );
 }
 
+} // namespace type_mismatch
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace missing_key {
 
 TEST(error, missing_key) {
     json_model::MissingKeyError error("id");
@@ -162,4 +178,8 @@ TEST(error, missing_key) {
     );
 }
 
+} // namespace missing_key
+
 ////////////////////////////////////////////////////////////////////////////////
+
+} // namespace json_model::test_error

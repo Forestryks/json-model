@@ -8,9 +8,13 @@
 #include <functional>
 #include <string>
 
+namespace json_model::test_to_json {
+
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OnlyPrimitivesModel : public json_model::Model {
+namespace primitives {
+
+struct Model : public json_model::Model {
     DECLARE_FIELD(bool_field, bool);
     DECLARE_FIELD(double_field, double);
     DECLARE_FIELD(int_field, int);
@@ -21,7 +25,7 @@ struct OnlyPrimitivesModel : public json_model::Model {
     DECLARE_FIELD(nullptr_field, std::nullptr_t);
 
     PROVIDE_DETAILS(
-        OnlyPrimitivesModel,
+        Model,
         bool_field(_, "bool-field"),
         double_field(_, "double-field"),
         int_field(_, "int-field"),
@@ -34,9 +38,9 @@ struct OnlyPrimitivesModel : public json_model::Model {
 };
 
 TEST(to_json, primitives) {
-    OnlyPrimitivesModel model;
+    Model model;
     model.set_bool_field(true);
-    model.set_double_field(3.1415926);
+    model.set_double_field(3.14159);
     model.set_int_field(239);
     model.set_int64_field(INT64_MAX);
     model.set_unsigned_field(179u);
@@ -45,56 +49,64 @@ TEST(to_json, primitives) {
     model.set_nullptr_field(nullptr); // Unexpectedly
     ASSERT_STREQ(
         model.to_json().c_str(),
-        R"({"bool-field":true,"double-field":3.1415926,"int-field":239,"int64-field":9223372036854775807,"unsigned-field":179,"uint64-field":18446744073709551615,"string-field":"\"An algorithm must be seen to be believed.\" - Donald Knuth","null-field":null})"
+        R"({"bool-field":true,"double-field":3.14159,"int-field":239,"int64-field":9223372036854775807,"unsigned-field":179,"uint64-field":18446744073709551615,"string-field":"\"An algorithm must be seen to be believed.\" - Donald Knuth","null-field":null})"
     );
 }
 
+} // namespace primitives
+
 ////////////////////////////////////////////////////////////////////////////////
 
-struct InnerNestedModel : public json_model::Model {
+namespace nested_model {
+
+struct InnerModel : public json_model::Model {
     DECLARE_FIELD(string, std::string);
     DECLARE_FIELD(null_field, std::nullptr_t);
 
     PROVIDE_DETAILS(
-        InnerNestedModel,
+        InnerModel,
         string(_, "string"),
         null_field(_, "null")
     )
 };
 
-struct NestedModel : public json_model::Model {
-    DECLARE_FIELD(inner, std::unique_ptr<InnerNestedModel>);
+struct Model : public json_model::Model {
+    DECLARE_FIELD(inner, std::unique_ptr<InnerModel>);
 
     PROVIDE_DETAILS(
-        NestedModel,
+        Model,
         inner(_, "inner")
     )
 };
 
 TEST(to_json, nested_model) {
-    NestedModel model;
+    Model model;
     model.get_inner()->set_string("hello").set_null_field(nullptr);
     ASSERT_STREQ(model.to_json().c_str(), R"({"inner":{"string":"hello","null":null}})");
 }
 
+} // namespace nested_model
+
 ////////////////////////////////////////////////////////////////////////////////
 
-struct HighlyNestedModel : public json_model::Model {
-    DECLARE_FIELD(nested, std::optional<std::unique_ptr<HighlyNestedModel>>);
+namespace highly_nested_model {
+
+struct Model : public json_model::Model {
+    DECLARE_FIELD(nested, std::optional<std::unique_ptr<Model>>);
 
     PROVIDE_DETAILS(
-        HighlyNestedModel,
+        Model,
         nested(_, "nested")
     )
 };
 
 TEST(to_json, highly_nested_model) {
-    HighlyNestedModel model;
-    HighlyNestedModel* current_nested = &model;
+    Model model;
+    Model* current_nested = &model;
     std::string prefix = "{";
     std::string suffix = "}";
     for (size_t i = 0; i < 100; ++i) {
-        current_nested->get_nested() = std::make_unique<HighlyNestedModel>();
+        current_nested->get_nested() = std::make_unique<Model>();
         current_nested = current_nested->get_nested()->get();
         prefix += R"("nested":{)";
         suffix += "}";
@@ -102,25 +114,29 @@ TEST(to_json, highly_nested_model) {
     }
 }
 
+} // namespace highly_nested_model
+
 ////////////////////////////////////////////////////////////////////////////////
 
-struct InnerVectorModel : public json_model::Model {
+namespace vector {
+
+struct InnerModel : public json_model::Model {
     DECLARE_FIELD(value, std::string);
 
     PROVIDE_DETAILS(
-        InnerVectorModel,
+        InnerModel,
         value(_, "value")
     )
 };
 
-struct VectorModel : public json_model::Model {
+struct Model : public json_model::Model {
     DECLARE_FIELD(simple_vector, std::vector<int>);
-    DECLARE_FIELD(pointer_vector, std::vector<std::unique_ptr<InnerVectorModel>>);
+    DECLARE_FIELD(pointer_vector, std::vector<std::unique_ptr<InnerModel>>);
     DECLARE_FIELD(map_vector, std::vector<std::map<std::string, int>>);
     DECLARE_FIELD(variant_vector, std::vector<std::variant<int, std::string>>);
 
     PROVIDE_DETAILS(
-        VectorModel,
+        Model,
         simple_vector(_, "nums"),
         pointer_vector(_, "objects"),
         map_vector(_, "maps"),
@@ -130,7 +146,7 @@ struct VectorModel : public json_model::Model {
 
 TEST(to_json, vector) {
     const int N = 1000;
-    VectorModel model;
+    Model model;
     std::string expected = R"({"nums":[)";
     for (int i = 1; i <= N; ++i) {
         expected += std::to_string(i);
@@ -152,7 +168,7 @@ TEST(to_json, vector) {
             expected += ',';
         }
 
-        auto ptr = std::make_unique<InnerVectorModel>();
+        auto ptr = std::make_unique<InnerModel>();
         ptr->set_value(std::to_string(i));
         model.get_pointer_vector().emplace_back(std::move(ptr));
     }
@@ -185,7 +201,11 @@ TEST(to_json, vector) {
     ASSERT_EQ(model.to_json(), expected);
 }
 
+} // namespace vector
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace map {
 
 struct InnerMapModel : public json_model::Model {
     DECLARE_FIELD(value, int);
@@ -304,7 +324,11 @@ TEST(to_json, map) {
     ASSERT_EQ(ordered_string, unordered_string);
 }
 
+} // namespace map
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace nested_vector {
 
 template<typename T, int Depth>
 struct nested_vector {
@@ -334,17 +358,17 @@ void initialize_vector(std::vector<T>& vector, const V& gen) {
 }
 
 template<typename T, int Depth>
-struct NestedVectorModel : public json_model::Model {
+struct Model : public json_model::Model {
     DECLARE_FIELD(vector, nested_vector_t<T, Depth>);
 
     PROVIDE_DETAILS(
-        NestedVectorModel,
+        Model,
         vector(_, "vector")
     )
 };
 
 TEST(to_json, nested_vector) {
-    NestedVectorModel<int, 10> model;
+    Model<int, 10> model;
     int val = 0;
     auto gen = [&val]() -> int {
         return val++;
@@ -364,20 +388,24 @@ TEST(to_json, nested_vector) {
     ASSERT_EQ(model.to_json(), expected);
 }
 
+} // namespace nested_vector
+
 ////////////////////////////////////////////////////////////////////////////////
 
-struct InnerVariantModel : json_model::Model {
+namespace variant {
+
+struct InnerModel : public json_model::Model {
     DECLARE_FIELD(string, std::string);
 
     PROVIDE_DETAILS(
-        InnerVariantModel,
+        InnerModel,
         string(_, "string")
     )
 };
 
-struct VariantModel : json_model::Model {
+struct Model : public json_model::Model {
     DECLARE_FIELD(var, std::variant<
-        std::unique_ptr<InnerVariantModel>,
+        std::unique_ptr<InnerModel>,
         bool,
         int,
         std::string,
@@ -387,12 +415,12 @@ struct VariantModel : json_model::Model {
     >);
 
     PROVIDE_DETAILS(
-        VariantModel,
+        Model,
         var(_, "var")
     )
 };
 
-struct PrimitiveVariantModel : json_model::Model {
+struct PrimitiveVariantModel : public json_model::Model {
     DECLARE_FIELD(var, std::variant<int>);
 
     PROVIDE_DETAILS(
@@ -402,7 +430,7 @@ struct PrimitiveVariantModel : json_model::Model {
 };
 
 TEST(to_json, variant) {
-    VariantModel model;
+    Model model;
     ASSERT_EQ(model.get_var().index(), 0u);
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"string":""}})");
     model.set_var(true);
@@ -422,7 +450,7 @@ TEST(to_json, variant) {
         }
     );
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"239":"179","hello":"there"}})");
-    auto ptr = std::make_unique<InnerVariantModel>();
+    auto ptr = std::make_unique<InnerModel>();
     ptr->set_string("hello");
     model.get_var() = std::move(ptr);
     ASSERT_STREQ(model.to_json().c_str(), R"({"var":{"string":"hello"}})");
@@ -431,4 +459,8 @@ TEST(to_json, variant) {
     ASSERT_STREQ(primitive_model.to_json().c_str(), R"({"var":0})");
 }
 
+} // namespace variant
+
 ////////////////////////////////////////////////////////////////////////////////
+
+} // namespace json_model::test_to_json

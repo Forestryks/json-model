@@ -130,6 +130,10 @@ public:
         trace_.push_back("\"" + key + "\"");
     }
 
+    std::vector<std::string> get_trace() const noexcept {
+        return std::vector<std::string>(trace_.rbegin(), trace_.rend());
+    }
+
 protected:
     std::string build_trace() const noexcept {
         std::string result = "root";

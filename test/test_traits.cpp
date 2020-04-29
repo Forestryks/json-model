@@ -6,7 +6,11 @@
 
 #include <gtest/gtest.h>
 
+namespace json_model::test_traits {
+
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace traits {
 
 class Model : public json_model::Model {};
 class NotModel {};
@@ -89,4 +93,8 @@ TEST(traits, traits) {
     );
 }
 
+} // namespace traits
+
 ////////////////////////////////////////////////////////////////////////////////
+
+} // namespace json_model::test_traits

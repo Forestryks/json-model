@@ -5,13 +5,39 @@
 #ifndef JSON_MODEL_INCLUDE_JSON_MODEL_FIELD_H
 #define JSON_MODEL_INCLUDE_JSON_MODEL_FIELD_H
 
-#include <iostream>
 #include "traits.h"
 #include "types.h"
+#include "init.h"
 
 namespace json_model {
 
 inline struct ConstructorDummy {} constructor_dummy;
+
+class JsonValueWrapper {
+public:
+    JsonValueWrapper(const json_value_t& value, bool throw_on_error) noexcept
+        : value_(value), throw_on_error_(throw_on_error), failed_(false) {}
+
+    const json_value_t& get_value() const noexcept {
+        return value_;
+    }
+
+    bool throw_on_error() const noexcept {
+        return throw_on_error_;
+    }
+
+    bool is_failed() const noexcept {
+        return failed_;
+    }
+
+    void fail() const noexcept {
+        failed_ = true;
+    }
+private:
+    const json_value_t& value_;
+    bool throw_on_error_;
+    mutable bool failed_;
+};
 
 template<typename T>
 class Field {
@@ -21,19 +47,7 @@ public:
         static_assert(!std::is_pointer_v<T>, "Use std::unique_ptr instead of raw pointers");
         static_assert(is_valid_for_field_v<T>);
 
-        if constexpr (is_primitive_v<T>) {
-            value_ = T();
-        } else if constexpr (is_pointer_v<T>) {
-            value_ = std::make_unique<typename T::element_type>();
-        } else if constexpr (is_variant_v<T>) {
-            static_assert(std::variant_size_v<T> > 0);
-            using variant_first_t = typename std::variant_alternative_t<0, T>;
-            if constexpr (is_primitive_v<variant_first_t>) {
-                value_ = variant_first_t();
-            } else if constexpr (is_pointer_v<variant_first_t>) {
-                value_ = std::make_unique<typename variant_first_t::element_type>();
-            }
-        }
+        initialize(value_);
     }
 
     void operator()(json_writer_t& writer, const char* name) const noexcept {
@@ -48,8 +62,49 @@ public:
         }
     }
 
-    void operator()([[maybe_unused]] const JsonValueWrapper& value_wrapper, [[maybe_unused]] const char* name) {
+    void operator()(const JsonValueWrapper& value_wrapper, const char* name) {
+        if (value_wrapper.is_failed()) return;
+        if (!value_wrapper.get_value().HasMember(name)) {
+            if constexpr (is_optional_v<T>) {
+                value_.reset();
+            } else {
+                value_wrapper.fail();
+                if (value_wrapper.throw_on_error()) {
+                    throw MissingKeyError(name);
+                }
+            }
+            return;
+        }
+        const auto& json_value = value_wrapper.get_value()[name];
 
+        if (value_wrapper.throw_on_error()) {
+            try {
+                if constexpr (is_optional_v<T>) {
+                    value_.emplace();
+                    initialize(value_.value());
+                    from_json(json_value, value_.value(), true);
+                } else {
+                    from_json(json_value, value_, true);
+                }
+            } catch (SchemaError& error) {
+                error.add_trace_key(name);
+                throw;
+            }
+        } else {
+            if constexpr (is_optional_v<T>) {
+                value_.emplace();
+                initialize(value_.value());
+                if (!from_json(json_value, value_.value(), false)) {
+                    value_wrapper.fail();
+                    return;
+                }
+            } else {
+                if (!from_json(json_value, value_, false)) {
+                    value_wrapper.fail();
+                    return;
+                }
+            }
+        }
     }
 
     T value_;
