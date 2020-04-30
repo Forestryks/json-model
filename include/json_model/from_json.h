@@ -169,17 +169,7 @@ from_json(const json_value_t& json_value, T& value, bool throw_on_error) {
     value.template emplace<V>();
     initialize(std::get<V>(value));
     if constexpr (IsLast) {
-        if (throw_on_error) {
-            try {
-                assert(from_json(json_value, std::get<V>(value), true));
-            } catch (SchemaError& error) {
-                error.add_trace_key("<variant:" + std::to_string(I) + ">");
-                throw;
-            }
-            return true;
-        } else {
-            return from_json(json_value, std::get<V>(value), false);
-        }
+        return from_json(json_value, std::get<V>(value), throw_on_error);
     } else {
         if (from_json(json_value, std::get<V>(value), false)) {
             return true;

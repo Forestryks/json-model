@@ -611,7 +611,7 @@ TEST(from_json, variant) {
     TEST_TYPE_MISMATCH(
         Model,
         R"({"var":["oh"]})",
-        root["var"]["<variant:7>"],
+        root["var"],
         object,
         array
     );
@@ -619,14 +619,14 @@ TEST(from_json, variant) {
     TEST_KEY_MISSING(
         Model,
         R"({"var":{"gg":123}})",
-        root["var"]["<variant:7>"],
+        root["var"],
         null
     );
 
     TEST_TYPE_MISMATCH(
         Model,
         R"({"var":{"null":123}})",
-        root["var"]["<variant:7>"]["null"],
+        root["var"]["null"],
         null,
         number
     );
